@@ -4,12 +4,13 @@
   <li><a href="#introduction">Introduction</a>
   <li><a href="#libraries">Import Required Libraries</a>
   <li><a href="#explore">Explore the Dataset</a>
-  <li>Spotify Web API
+  <li><a href="#spotifywebapi">Spotfiy Web API</a>
   <li>Exploratory Analysis and Insights
   <li>Hypotheses for 2025
   <li>Diagnostic Analysis of Spotify API Integration
 </ul>
 
+<br>
 <h1><a name="introduction">Introduction</a></h1>
 <p>
   As an avid music lover, Spotify has become an integral part of my daily routine. 
@@ -42,6 +43,7 @@ Please feel free to reach out with any questions or suggestions at <a href="http
  <li>IDE: VS Code </li>
  </ul>
 
+<br>
 <h1><a name="libraries">Import Required Libaries</a></h1>
 
 ```python
@@ -71,7 +73,7 @@ warnings.filterwarnings('ignore')
   <li><code>warnings.filterwarnings('ignore')</code>: This module enables us to manage warnings in the code that aren't necessarily errors but highlights depreciated feaures or non-critical issues.</li>
 </ul>
 
-
+<br>
 <h1><a name="explore">Exploring the Dataset</a></h1>
 <p>Spotify's streaming history data is delivered to users in JSON format</p>
 
@@ -122,6 +124,10 @@ view_metadata(spot_1)
 <h3>Data Cleaning & Transformation</h3>
 
 ```python
+# Create 2 new DataFrames for the 2023 and 2024 data respectively.
+hist_2023 = pd.concat([spot_1, spot_2], axis=0)
+hist_2024 = pd.concat([spot_3, spot_4], axis=0)
+
 # I want to change the columns from camelCase to snake_case but this step can be skipped
 hist_2023.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', col).lower() for col in hist_2023.columns]
 hist_2024.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', col).lower() for col in hist_2024.columns]
@@ -129,7 +135,7 @@ print('Spotify 2023 columns:', hist_2023.columns )
 print('Spotify 2024 columns:', hist_2024.columns )
 ```
 <h6>Output:</h6>
-<img width="500" alt="Coding" src="">
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193526.png">
 
 ```python
 # When reviewing the metadata for the streaming history, I can see there is some overlap in data.
@@ -146,7 +152,11 @@ check_dates(hist_2023)
 check_dates(hist_2024)
 ```
 <h6>Output:</h6>
-<img width="500" alt="Coding" src="">
+<p>Dates for 2023 DataFrame</p>
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20194251.png">
+<h6>Output:</h6>
+<p>Dates for 2024 DataFrame</p>
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193555.png">
 
 ```python
 # Omit any data that overlaps 
@@ -157,13 +167,13 @@ check_dates(clean_2023)
 check_dates(clean_2024)
 ```
 <h6>Output:</h6>
-<img width="500" alt="Coding" src="">
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193619.png">
 
 ```python
 # Now that we are confident there is no overlapping data
 # you can concat all spotify history into 1 DataFrame for easier handling 
 full_hist = pd.concat([clean_2023, clean_2024], axis=0)
-view_metadata(full_hist)
+full_hist.head(10)
 ```
 <h6>Output:</h6>
 <img width="500" alt="Coding" src="">
@@ -189,6 +199,7 @@ full_hist = add_datetime_objects(full_hist)
 ```
 <h6>Output:</h6>
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20111754.png">
+<br>
 
 <h1><a name="spotifywebapi">Spotfiy Web API</a></h1>
 <p> I would like more qualiative data for the artists and songs in my streaming history so I will be connecting to the Spotify Web API.
@@ -282,6 +293,14 @@ def process_artist_dataset(df, batch_size=150):
 # Test the data API functionality first
 unique_artists_small = process_artist_dataset(unique_artists_small)
 ```
+
+```python
+# Run the API on the full dataset
+unique_artists = process_artist_dataset(unique_artists)
+
+# The average batch processing time is ~3 minutes per 150 rows for dataset with ~2000 rows.
+```
+
 <h6>Output:</h6>
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20110613.png">
 
@@ -292,12 +311,39 @@ unique_artists_small = process_artist_dataset(unique_artists_small)
 </ul>
 
 <p> More information on what data can be extracted from the Spotify Search API can be found <a href="https://developer.spotify.com/documentation/web-api/reference/search">here.</a></p>
+<br>
+
+<h1><a name="exploratoryanalysis">Exploratory Analysis and Insights</a></h1>
+
+<h4> 1. Explore the top sub-genres over the last 2 years</h4>
 
 ```python
-# Run the API on the full dataset
-unique_artists = process_artist_dataset(unique_artists)
+# Get all unique sub-genres 
+all_genres = [genre for sublist in unique_artists['genres'] for genre in sublist]
 
-# The average batch processing time is ~3 minutes per 150 rows for dataset with ~2000 rows.
+# Get the count of each genre
+genre_counts = Counter(all_genres)
+
+# Create the word cloud
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(genre_counts)
+
+# Display the word cloud using matplotlib
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
 ```
-<h6>Output:</h6>
-<img width="500" alt="Coding" src="">
+<h6>Output</h6>
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/all-sub-genre-preferences.png">
+<br>
+
+<h4> 2. The relationship between the popularity of the artist and the success of the genre attribution</h4>
+
+```python
+sns.histplot(data=df2, x="artist_popularity", bins=10, hue='genre_found_via_api')
+plt.show()
+```
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/artist-popularity-genre-attribution.png">
+
+
+
