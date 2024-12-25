@@ -2,7 +2,7 @@
 <h2>Contents</h2>
 <ul>
   <li><a href="#introduction">Introduction</a>
-  <li><a href="#importrequiredlibraries">Import Required Libraries</a>
+  <li><a href="#libraries">Import Required Libraries</a>
   <li>Exploring the Dataset
   <li>Spotify Web API
   <li>Exploratory Analysis and Insights
@@ -42,7 +42,7 @@ Please feel free to reach out with any questions or suggestions at <a href="http
  <li>IDE: VS Code </li>
  </ul>
 
-<h1><a name="importrequiredlibaries">Import Required Libaries</a></h1>
+<h1><a name="libraries">Import Required Libaries</a></h1>
 
 ```python
 import pandas as pd
