@@ -3,7 +3,7 @@
 <ul>
   <li><a href="#introduction">Introduction</a>
   <li><a href="#libraries">Import Required Libraries</a>
-  <li>Exploring the Dataset
+  <li><a href="#explore">Explore the Dataset</a>
   <li>Spotify Web API
   <li>Exploratory Analysis and Insights
   <li>Hypotheses for 2025
@@ -72,7 +72,7 @@ warnings.filterwarnings('ignore')
 </ul>
 
 
-<h1><a name="exploringthedataset">Exploring the Dataset</a></h1>
+<h1><a name="explore">Exploring the Dataset</a></h1>
 <p>Spotify's streaming history data is delivered to users in JSON format</p>
 
 ```python
