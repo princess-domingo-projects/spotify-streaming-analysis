@@ -315,7 +315,17 @@ unique_artists = process_artist_dataset(unique_artists)
 
 <h1><a name="exploratoryanalysis">Exploratory Analysis and Insights</a></h1>
 
-<h4> 1. Explore the top sub-genres over the last 2 years</h4>
+<h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
+
+<h4> 1b. What was the year-on-year change in Spotify consumption? </h4>
+
+<h4> 2. What was the highest recorded listening day in 2023 and 2024? </h4>
+
+<h4> 3. What were the average hours spent on Spotify over a daily, weekly, monthly basis in 2023 and 2024? </h4>
+
+<h4> 3b. How did the average hours spent using Spotify change YoY? </h4>
+
+<h4> 4. Explore the top sub-genres over the last 2 years</h4>
 
 ```python
 # Get all unique sub-genres 
@@ -337,7 +347,13 @@ plt.show()
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/all-sub-genre-preferences.png">
 <br>
 
-<h4> 2. The relationship between the popularity of the artist and the success of the genre attribution</h4>
+<h4> 5. What were the top genres in 2023 and 2024?</h4>
+
+<h4> 5b. How have my genre preferences changed quarter-on-quarter and year-on-year? </h4>
+
+<h4> 5c. What were the top genres on the highest recorded listening day for 2023 and 2024? </h4>
+
+<h4> 10. The relationship between an artist's popularity and discovery of their associated genres. </h4>
 
 ```python
 sns.histplot(data=df2, x="artist_popularity", bins=10, hue='genre_found_via_api')
