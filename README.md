@@ -319,7 +319,67 @@ unique_artists = process_artist_dataset(unique_artists)
   <li><code>followers</code>: This returns the number of followers of the artist's page. NOTE: the followers count is a few days in arreas.</li>
   <li><code>artist_popularity</code>: This determines the popularity of the artist on a scale of 0-100 where 0 is least popular and 100 is most popular.</li>
 </ul>
+<br>
 
+```python
+def get_track_info(track_name, artist_name):
+    params = {"q": f"track:{track_name} artist:{artist_name}", "type": "track", "limit": 1}
+    try:
+        response = requests.get(search_url, headers=headers, params=params)
+        response.raise_for_status()
+        track_data = response.json()
+        if track_data["tracks"]["items"]:
+            track = track_data["tracks"]["items"][0]
+            return {
+                "duration_ms" : track.get("duration_ms"),
+                "popularity": track.get("popularity"),
+                "release_date": track["album"].get("release_date"),
+                "release_date_precision": track["album"].get("release_date_precision")
+            }
+        return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching track info for '{track_name}' by '{artist_name}': {e}")
+        return None
+    
+def process_track_info(df, batch_size=50):
+    processed_file = "spotify_dataset_with_release_dates.csv"
+
+    # Ensure necessary columns exist
+    required_columns =  ["duration_ms", "popularity", 
+                         "release_date", "release_date_precision"]
+    
+    for col in required_columns:
+        if col not in df.columns:
+            df[col] = None
+
+    # Reset index to avoid KeyErrors
+    df.reset_index(drop=True, inplace=True)
+
+    for i in range(len(df)):
+
+        track_name = df.at[i, "track_name"]
+        artist_name = df.at[i, "artist_name"]
+
+        # Fetch track information
+        track_info = get_track_info(track_name, artist_name)
+        if track_info:
+            df.at[i, "popularity"] = track_info.get("popularity")
+            df.at[i, "release_date"] = track_info.get("release_date")
+            df.at[i, "release_date_precision"] = track_info.get("release_date_precision")
+            df.at[i, "duration_ms"] = track_info.get("duration_ms")
+
+        # Save progress every batch or at the end
+        if i % batch_size == 0 or i == len(df) - 1:
+            df.to_csv(processed_file, index=False)
+            print(f"Saved progress: {i + 1}/{len(df)} rows processed.")
+
+        # Throttle requests to avoid hitting rate limits
+        time.sleep(1)
+
+    return df
+
+# Process the DataFrame with track and artist names
+```
 <h6>Output:</h6>
 
  <ul>
