@@ -5,9 +5,10 @@
   <li><a href="#libraries">Import Required Libraries</a>
   <li><a href="#explore">Explore the Dataset</a>
   <li><a href="#spotifywebapi">Spotfiy Web API</a>
+  <li>Diagnostic Analysis of the Spotify API Integration
   <li>Exploratory Analysis and Insights
   <li>Hypotheses for 2025
-  <li>Diagnostic Analysis of Spotify API Integration
+  
 </ul>
 
 <br>
@@ -134,8 +135,17 @@ hist_2024.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', col).lower() for col in his
 print('Spotify 2023 columns:', hist_2023.columns )
 print('Spotify 2024 columns:', hist_2024.columns )
 ```
+
 <h6>Output:</h6>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193526.png">
+<img width="600" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193526.png">
+<br>
+ <ul>
+  <li><code>end_time</code>: The date and time the user stopped listening to the song</li>
+  <li><code>artist_name</code>: The name of the artist</li>
+  <li><code>track_name</code>: The name of the song </li>
+  <li><code>ms_played</code>: The duration of the song being played in milliseconds </li>
+</ul>
+<br>
 
 ```python
 # When reviewing the metadata for the streaming history, I can see there is some overlap in data.
@@ -310,9 +320,44 @@ unique_artists = process_artist_dataset(unique_artists)
   <li><code>artist_popularity</code>: This determines the popularity of the artist on a scale of 0-100 where 0 is least popular and 100 is most popular.</li>
 </ul>
 
+<h6>Output:</h6>
+
+ <ul>
+  <li><code>track_popularity</code>: This determines the popularity of the track on a scale of 0-100 where 0 is least popular and 100 is most popular.</li>
+  <li><code>release_date</code>: The release date of the song, if released as a single, or album containing the song</li>
+  <li><code>release_date_precision</code>: How precise the release date is: day, month or year </li>
+  <li><code>duration_ms</code>: The duration of the song in milliseconds</li>
+</ul>
+
+
+
 <p> More information on what data can be extracted from the Spotify Search API can be found <a href="https://developer.spotify.com/documentation/web-api/reference/search">here.</a></p>
 <br>
 
+<h1><a name="diagnosticanalysis">Diagnostic Analysis of the Spotify API Integration</a></h1>
+
+```python
+api_check = unique_artists.copy()
+# Where the Spotify Web API was unable to find an associated genre to the answer, then False else True
+
+api_check['genre_found_via_api'] = np.where(api_check['artist_name'].\
+                            isin(uncategorized_artists_list), False, True)
+
+# Convert the followers column from a string to an integer
+api_check['followers'] = api_check['followers'].astype('int64')
+
+# Add a 
+api_check['followers_m'] = round(api_check['followers'] / 1000000, 1)
+```
+
+```python
+sns.histplot(data=api_check, x="artist_popularity", bins=10, hue='genre_found_via_api')
+plt.show()
+```
+<h6>Output</h6>
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/artist-popularity-genre-attribution.png">
+
+<br>
 <h1><a name="exploratoryanalysis">Exploratory Analysis and Insights</a></h1>
 
 <h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
@@ -347,19 +392,30 @@ plt.show()
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/all-sub-genre-preferences.png">
 <br>
 
-<h4> 5. What were the top genres in 2023 and 2024?</h4>
+<h4> 5. How is my music taste distributed across decades? </h4>
 
-<h4> 5b. How have my genre preferences changed quarter-on-quarter and year-on-year? </h4>
+<h4> 6. What were the top genres in 2023 and 2024?</h4>
 
-<h4> 5c. What were the top genres on the highest recorded listening day for 2023 and 2024? </h4>
+<h5> 6b. How have my genre preferences changed quarter-on-quarter and year-on-year? </h5>
 
-<h4> 10. The relationship between an artist's popularity and discovery of their associated genres. </h4>
+<h5> 6c. What were the top genres on the highest recorded listening day for 2023 and 2024? </h5>
 
-```python
-sns.histplot(data=df2, x="artist_popularity", bins=10, hue='genre_found_via_api')
-plt.show()
-```
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/artist-popularity-genre-attribution.png">
+<h4> 7. What were the top genres in 2023 and 2024? </h4>
 
+<h5> 7b. How many new artists did I listen to in 2024? </h5>
+
+<h5> 7c. What were my top songs from new artists in 2024? </h5>
+
+<h5> 7d. What were the top artists on the highest recorded listening day for 2023 and 2024</h5>
+
+<h4> 8. What were my longest listening streaks? </h4>
+
+<h5> 8b. Per year and artist </h5>
+
+<h5> 8b. Per year and song </h5>
+
+<h4> 9. How often did I skip music? </h4>
+
+<h5> 9b. Is there a relationship between the time of day I'm listening to music and when I skip music? </h5>
 
 
