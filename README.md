@@ -39,8 +39,8 @@ Please feel free to reach out with any questions or suggestions at <a href="http
 
  <ul><h3>Tools Used:</h3>
  <li>Programming Language: Python</li>
- <li>Libraries: pandas, numpy, requests, seabo:rn, dotenv</li>
- <li>Modules: re, time, os, matplotlib.pyplot, warnings</li>
+ <li>Libraries: pandas, numpy, requests, dotenv</li>
+ <li>Modules: re, time, os, warnings</li>
  <li>IDE: VS Code </li>
  </ul>
 
@@ -48,19 +48,28 @@ Please feel free to reach out with any questions or suggestions at <a href="http
 <h1><a name="libraries">Import Required Libaries</a></h1>
 
 ```python
+# Import modules/ packages/ libraries
 import pandas as pd
 import numpy as np
-import re
-import requests
-import time
 import os
-import seaborn as sns
-import matplotlib.pyplot as plt
-from dotenv import load_dotenv
+import re
+import time
+import requests
 import warnings
 warnings.filterwarnings('ignore')
-```
 
+# Plotly visualisation libraries
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.io as pio
+pio.renderers.default = 'notebook'
+
+# Dash
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+```
  <ul>
   <li><code>import pandas as pd</code>: This imports the library Pandas under the alias pd. Pandas can be used for data analysis and manipulation and provides data in a tabular structure like a DataFrame.</li>
   <li><code>import numpy as np</code>: This import the library NumPy under the alias np. NumPy is used for the numerical computation and supports arrays and matrices.</li>
@@ -68,10 +77,16 @@ warnings.filterwarnings('ignore')
   <li><code>import requests</code>: The module 'requests' is used to send HTTP requests through Python. This will be the way we interact with the Spotify API.</li>
   <li><code>import time</code>: The module 'time' is used to manage time-related tasks. </li>
   <li><code>import os</code>: This is a Python module that provides function for interacting with the operation system. It enables us to interact with environment variables like the API client ID and secret key.</li>
-  <li><code>import seaborn as sns</code>: This is a data visualisation library built on top of matplotlib. It's useful for identifying relationships between variables.</li>
-  <li><code>import matplotlib.pyplot as plt</code>: This is a data visualisation library that builds static, animated and interactive visualisations like line plots, bar charts and histograms.</li>
   <li><code>from dotenv import load_dotenv</code>: This is a library used to read key-value pairs from .env files.</li>
   <li><code>warnings.filterwarnings('ignore')</code>: This module enables us to manage warnings in the code that aren't necessarily errors but highlights depreciated feaures or non-critical issues.</li>
+  <li><code>import plotly.express as px</code>: This is a data visualisation module built for Plotly. It allows for creating charts with minimal code.</li>
+  <li><code>import plotly.graph_objects as go</code>: This is a data visualisation module built for Plotly. It allows to be more customisable graphs.</li>
+  <li><code>import plotly.io as pio</code>: It handles the input/output operates for Plotly graphs or figure. Default options are placing the figures in-line with the Notebook, opening the figure in a browser or producing a static image.</li>
+  <li><code>import dash</code>: A library that enables people to build interactive web-based
+    dashboards. It works with Plotly and React.js for creating UI.</li>
+  <li><code>from dash import dcc</code>: dcc or Dash Core Components manages the compotents of the overall dashboard (sliders, dropdown menus, tables, graphs).</li>
+  <li><code>from dash import html</code> html provides HTML components that enables coders to structure their dashboard.</li>
+    <li><code>from dash.dependences import Input Output</code> <b>Input</b> specifies a component/property that triggers an update. <b>Output</b> triggers a component/property to update.</li>
 </ul>
 
 <br>
@@ -98,13 +113,13 @@ json_data = [
         "artistName" : "SZA",
         "trackName" : "Snooze",
         "msPlayed" : 215985
-    }
+    }]
 
 # Import all JSON files
-spot_1 = pd.read_json('spotify_streaming_history_2023.json')
-spot_2 = pd.read_json('spotify_streaming_history_2023_1.json')
-spot_3 = pd.read_json('spotify_streaming_history_2024.json')
-spot_4 = pd.read_json('spotify_streaming_history_2024_1.json')
+spot_1 = pd.read_json('stream_2023.json')
+spot_2 = pd.read_json('stream_2023_1.json')
+spot_3 = pd.read_json('stream_2024.json')
+spot_4 = pd.read_json('stream_2024_1.json')
 
 # Create a function to view each DataFrame's metadata and structure
 def view_metadata(df):
