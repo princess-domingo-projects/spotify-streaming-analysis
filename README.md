@@ -195,15 +195,9 @@ check_dates(clean_2024)
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193619.png">
 
 ```python
-# Now that we are confident there is no overlapping data
-# you can concat all spotify history into 1 DataFrame for easier handling 
+# Now that we are confident there is no overlapping data, you can concat all spotify history into 1 DataFrame for easier handling 
 full_hist = pd.concat([clean_2023, clean_2024], axis=0)
-full_hist.head(10)
-```
-<h6>Output:</h6>
-<img width="500" alt="Coding" src="">
 
-```python
 # For this analysis, I will be using various datetime aggregations so will need to create some extra columns 
 def add_datetime_objects(df):
     # Month column 
@@ -220,10 +214,14 @@ def add_datetime_objects(df):
     df['stream_hour'] = df['end_time'].dt.hour
 
     return df
+
 full_hist = add_datetime_objects(full_hist)
+
+full_hist.head(10)
 ```
 <h6>Output:</h6>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20111754.png">
+<img width="500" alt="Coding" src="">
+
 <br>
 
 <h1><a name="spotifywebapi">Spotfiy Web API</a></h1>
@@ -436,6 +434,13 @@ plt.show()
 <h1><a name="exploratoryanalysis">Exploratory Analysis and Insights</a></h1>
 
 <h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
+<iframe 
+    src="https://amzn-s3-princess-projects.s3.eu-west-2.amazonaws.com/spotify_yoy_streaming_behaviour.html" 
+    width="100%" 
+    height="600" 
+    style="border: none;">
+</iframe>
+
 
 <h4> 1b. What was the year-on-year change in Spotify consumption? </h4>
 
