@@ -5,10 +5,10 @@
   <li><a href="#libraries">Import Required Libraries</a>
   <li><a href="#explore">Explore the Dataset</a>
   <li><a href="#spotifywebapi">Spotfiy Web API</a>
-  <li>Diagnostic Analysis of the Spotify API Integration
-  <li>Exploratory Analysis and Insights
-  <li>Hypotheses for 2025
-  <li>Creating Graphs using Plotly
+  <li><a href="#diagnosis">Diagnostic Analysis of the Spotify API Integration
+  <li><a href="#insights">Exploratory Analysis and Insights
+  <li><a href="#hypothesis">Hypotheses for 2025
+  <li><a href="#plotly">Creating Graphs using Plotly
     
 </ul>
 
@@ -408,7 +408,7 @@ def process_track_info(df, batch_size=50):
 <p> More information on what data can be extracted from the Spotify Search API can be found <a href="https://developer.spotify.com/documentation/web-api/reference/search">here.</a></p>
 <br>
 
-<h1><a name="diagnosticanalysis">Diagnostic Analysis of the Spotify API Integration</a></h1>
+<h1><a name="diagnosis">Diagnostic Analysis of the Spotify API Integration</a></h1>
 
 ```python
 # Create a copy of the unique artist record
@@ -433,7 +433,7 @@ followers_df = api_check[api_check['followers_m'] <= max_followers]
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/artist-popularity-genre-attribution.png">
 
 <br>
-<h1><a name="exploratoryanalysis">Exploratory Analysis and Insights</a></h1>
+<h1><a name="insights">Exploratory Analysis and Insights</a></h1>
 
 <h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
 <h5> 1b. What was the year-on-year change in Spotify consumption? </h5>
@@ -590,4 +590,10 @@ plt.show()
 
 <h5> 9b. Is there a relationship between the time of day I'm listening to music and when I skip music? </h5>
 
+<br>
+<h1><a name="hypothesis">Hypotheses for 2025</a></h1>
+
+<br>
+
+<h1><a name="plotly">Creating Graphs using Plotly</a></h1>
 
