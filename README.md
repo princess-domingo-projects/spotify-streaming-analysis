@@ -8,7 +8,8 @@
   <li>Diagnostic Analysis of the Spotify API Integration
   <li>Exploratory Analysis and Insights
   <li>Hypotheses for 2025
-  
+  <li>Creating Graphs using Plotly
+    
 </ul>
 
 <br>
@@ -410,23 +411,24 @@ def process_track_info(df, batch_size=50):
 <h1><a name="diagnosticanalysis">Diagnostic Analysis of the Spotify API Integration</a></h1>
 
 ```python
+# Create a copy of the unique artist record
 api_check = unique_artists.copy()
-# Where the Spotify Web API was unable to find an associated genre to the answer, then False else True
 
+# Where an artist was found by the API, true else false
 api_check['genre_found_via_api'] = np.where(api_check['artist_name'].\
                             isin(uncategorized_artists_list), False, True)
 
-# Convert the followers column from a string to an integer
-api_check['followers'] = api_check['followers'].astype('int64')
+# Convert the numeric values from objects / strings to integer.
+api_check[['followers', 'artist_popularity']] = api_check[['followers', 'artist_popularity']].astype('int64')
 
-# Add a 
+# Calculate the number of followeers in millions
 api_check['followers_m'] = round(api_check['followers'] / 1000000, 1)
+
+# Next, we want to know the maximimum of amount of followers an uncategorized artist has in this sample.
+max_followers = api_check.loc[api_check['genre_found_via_api'] == False, 'followers_m'].max()
+followers_df = api_check[api_check['followers_m'] <= max_followers]
 ```
 
-```python
-sns.histplot(data=api_check, x="artist_popularity", bins=10, hue='genre_found_via_api')
-plt.show()
-```
 <h6>Output</h6>
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/artist-popularity-genre-attribution.png">
 
@@ -434,23 +436,113 @@ plt.show()
 <h1><a name="exploratoryanalysis">Exploratory Analysis and Insights</a></h1>
 
 <h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
-<iframe 
-    src="https://amzn-s3-princess-projects.s3.eu-west-2.amazonaws.com/spotify_yoy_streaming_behaviour.html" 
-    width="100%" 
-    height="600" 
-    style="border: none;">
-</iframe>
+<h5> 1b. What was the year-on-year change in Spotify consumption? </h5>
 
+```python
+df2 = df.groupby('year')['total_ms'].sum().reset_index()
+df2['hours'] = round(((df2['total_ms'] / 60000) / 60), 1)
+```
 
-<h4> 1b. What was the year-on-year change in Spotify consumption? </h4>
+<h6>Output</h6>
 
-<h4> 2. What was the highest recorded listening day in 2023 and 2024? </h4>
+<h4> 2. How has my streaming behaviour changed MoM each year? </h4>
 
-<h4> 3. What were the average hours spent on Spotify over a daily, weekly, monthly basis in 2023 and 2024? </h4>
+```python
+df3 = df.groupby(['month', 'month_name', 'year'])['total_ms'].sum().reset_index().sort_values(by=['month', 'year'], ascending=[True, False])
+df3['hours'] = round(((df3['total_ms'] / 60000) / 60), 1)
+df3 = df3.drop('total_ms', axis=1)
+```
 
-<h4> 3b. How did the average hours spent using Spotify change YoY? </h4>
+<h6>Output</h6>
 
-<h4> 4. Explore the top sub-genres over the last 2 years</h4>
+<h4> 3. Are there set times of the day that I prefer listenning to muisc? </h4>
+
+```python
+df4 = df.groupby(['stream_hour', 'year'])['total_ms'].sum().reset_index()
+df4['hours'] = round(((df4['total_ms'] / 60000) / 60), 1)
+df4 = df4.drop('total_ms', axis=1)
+```
+
+<h6>Output</h6>
+
+<h4> 4. What was the highest recorded listening day in 2023 and 2024? </h4>
+
+```python
+# How many hours did I listen to Spotify a day?
+df5 = df.groupby(['date', 'year'])['total_ms'].sum().reset_index()
+df5['hours'] = round(((df5['total_ms'] / 60000) / 60), 1)
+df5 = df5.drop('total_ms', axis=1)
+
+# What is the highest recorded listening day in 2023 and 2024?
+df6 = df5.loc[df5.groupby('year')['hours'].idxmax()]
+```
+
+<h6>Output</h6>
+
+<h4> 5. What were my top artists, genres and songs for both year? </h4>
+
+```python
+# Create a function to dynamically calculate top genres, artiss and songs per year
+def get_top_music(df):
+        group_columns = {
+            'top_songs': 'track_name',
+            'top_artists': 'artist_name',
+            'top_genres': 'genre'
+        }
+
+        top_dataframes = {}
+
+        for name, column in group_columns.items():
+            if column in df.columns:
+
+              # Calculate the total milliseconds played was selected per year and each respective column (genre, artist and then song)
+              # We will be calculating both the total milliseconds
+                df7 = df.groupby(['year', column]).agg(
+                    total_ms=('total_ms', 'sum'),
+                    total_times=('track_name', 'count')
+                ).reset_index().sort_values(by=['year', 'total_ms'], ascending=[False, False])
+
+                df7['hours'] = round(((df7['total_ms'] / 60000) / 60), 1)
+                df7 = df7.drop('total_ms', axis=1)
+
+                df8 = df7.groupby('year').head(10)
+
+                # Save the top dataframe to the dictionary
+                top_dataframes[name] = df8
+
+        return top_dataframes
+
+    top_dataframes = get_top_music(df)
+
+    # Access each individual dataframes
+    top_songs = top_dataframes.get('top_songs')
+    top_artists = top_dataframes.get('top_artists')
+    top_genres = top_dataframes.get('top_genres')
+```
+<h6>Output</h6>
+
+<h5> 5b. Which genres appreared in both 2023 and 2024 </h5>
+
+```python
+# Find the unique genres for both 2023 and 2024.
+genres_2023 = df[df['year'] == 2023]['genre'].unique()
+genres_2024 = df[df['year'] == 2024]['genre'].unique()
+
+# Find which genres appeared in both years
+existing_genres = set(genres_2024) & set(genres_2023)
+
+# Create the DataFrame that stores which genres appear both years for later analysis
+top_genres_filtered = top_genres[top_genres['genre'].isin(existing_genres)]
+
+# For the final graph, create a DataFrame that shows how often you are streaming your preferred genres
+
+genre_streaming_month = df[df['genre'].isin(existing_genres)].groupby(['month', 'month_name', 'year', 'genre'])['total_ms'].sum().reset_index(name='total_ms_played')
+genre_streaming_month['hours'] = round(((genre_streaming_month['total_ms_played'] / 60000) / 60), 1)
+genre_streaming_month = genre_streaming_month.drop('total_ms_played', axis=1)
+```
+<h6>Output</h6>
+
+<h4> 7. Explore the top sub-genres over the last 2 years</h4>
 
 ```python
 # Get all unique sub-genres 
