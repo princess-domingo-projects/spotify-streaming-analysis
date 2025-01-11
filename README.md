@@ -435,29 +435,41 @@ followers_df = api_check[api_check['followers_m'] <= max_followers]
 <br>
 <h1><a name="insights">Exploratory Analysis and Insights</a></h1>
 
-<h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
-<h5> 1b. What was the year-on-year change in Spotify consumption? </h5>
+<p> The script contains a function that calculates the values from two datasets: 'artist_info' and 'streaming_history. The Python excerpts below are representative of the function.</p>
 
+<h6> Output: </h6>
+<h7> Artist info DataFrane: </h7>
+
+
+<h6> Output: </h6>
+<h7> Streaming history DataFrane: </h7>
+
+<h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
+  
 ```python
+# Calculate the total milliseconds spent streaming music each year
 df2 = df.groupby('year')['total_ms'].sum().reset_index()
+
+# Convert to hours to improve readability.
 df2['hours'] = round(((df2['total_ms'] / 60000) / 60), 1)
 ```
-
+<br>
 <h6>Output</h6>
-
 <h4> 2. How has my streaming behaviour changed MoM each year? </h4>
 
 ```python
+# Calculate the total milliseconds spend streaming music each month 
 df3 = df.groupby(['month', 'month_name', 'year'])['total_ms'].sum().reset_index().sort_values(by=['month', 'year'], ascending=[True, False])
+
+# Convert to hours to improve readability.
 df3['hours'] = round(((df3['total_ms'] / 60000) / 60), 1)
-df3 = df3.drop('total_ms', axis=1)
 ```
-
+<br>
 <h6>Output</h6>
-
 <h4> 3. Are there set times of the day that I prefer listenning to muisc? </h4>
 
 ```python
+# Calculate the total
 df4 = df.groupby(['stream_hour', 'year'])['total_ms'].sum().reset_index()
 df4['hours'] = round(((df4['total_ms'] / 60000) / 60), 1)
 df4 = df4.drop('total_ms', axis=1)
