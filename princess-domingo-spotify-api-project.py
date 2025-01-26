@@ -422,10 +422,3 @@ def clean_artist_data(df):
 
 df14 = clean_artist_data(df13)
 
-# Is there a relationship between an artist's popularity or followers to the success of the API?
-df15 = df14.copy()
-df15[['followers', 'artist_popularity']] = df15[['followers', 'artist_popularity']].astype('int64')
-df15['followers_m'] = round(df15['followers'] / 1000000, 1)
-df15['popularity_bins'] = pd.cut(df15['artist_popularity'], bins=10, labels=False)*10
-df15.to_csv('genre_association_dataset.csv', index=False)
-
