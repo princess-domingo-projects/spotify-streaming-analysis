@@ -84,7 +84,7 @@ check_dates(df8, year=2024)
 df10 = pd.concat([df8, df7], axis=0)
 logging.info(f'Spotify data has been successfully concatenated.')
 
-# The API needed to query unique artists. I recommend creating a DataFrame that captures all unique artists rather than the entire DataFrame.
+# The API needed to query unique artists. I recommend creating a DataFrame that captures all unique artists rather than running the entire DataFrame which will contain duplicates.
 
 spotify_id = os.getenv("spotify_client_id") # Replace with own client ID
 if spotify_id: 
