@@ -60,7 +60,7 @@ import calendar
 </ul>
 
 <br>
-<h1><a name="transform"><h3>Data Cleaning & Transformation</a></h1>
+<h1><a name="transform">Data Cleaning & Transformation</a></h1>
 
 ```python
 # Capture the current date
