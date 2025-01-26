@@ -6,10 +6,7 @@
   <li><a href="#explore">Explore the Dataset</a>
   <li><a href="#spotifywebapi">Spotfiy Web API</a>
   <li><a href="#diagnosis">Diagnostic Analysis of the Spotify API Integration
-  <li><a href="#insights">Exploratory Analysis and Insights
-  <li><a href="#hypothesis">Hypotheses for 2025
-  <li><a href="#plotly">Creating Graphs using Plotly
-    
+  <li><a href="#insights">Exploratory Analysis and Insights   
 </ul>
 
 <br>
@@ -39,37 +36,30 @@ Please feel free to reach out with any questions or suggestions at <a href="http
  </p>
 
  <ul><h3>Tools Used:</h3>
- <li>Programming Language: Python</li>
+ <li>Programming Language: Python, SQL</li>
  <li>Libraries: pandas, numpy, requests, dotenv</li>
- <li>Modules: re, time, os, warnings</li>
+ <li>Modules: re, time, os, warnings, logging, datetime, calendar</li>
  <li>IDE: VS Code </li>
+ <li>Visualisation tool: Tableau</li>
  </ul>
 
 <br>
 <h1><a name="libraries">Import Required Libaries</a></h1>
 
 ```python
-# Import modules/ packages/ libraries
-import pandas as pd
-import numpy as np
+# Required packages/libraries/modules
+import pandas as pd 
+import numpy as np 
 import os
 import re
-import time
+import time 
 import requests
 import warnings
 warnings.filterwarnings('ignore')
+import logging
+from datetime import datetime
+import calendar
 
-# Plotly visualisation libraries
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import plotly.io as pio
-pio.renderers.default = 'notebook'
-
-# Dash
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
 ```
  <ul>
   <li><code>import pandas as pd</code>: This imports the library Pandas under the alias pd. Pandas can be used for data analysis and manipulation and provides data in a tabular structure like a DataFrame.</li>
@@ -80,14 +70,9 @@ from dash.dependencies import Input, Output
   <li><code>import os</code>: This is a Python module that provides function for interacting with the operation system. It enables us to interact with environment variables like the API client ID and secret key.</li>
   <li><code>from dotenv import load_dotenv</code>: This is a library used to read key-value pairs from .env files.</li>
   <li><code>warnings.filterwarnings('ignore')</code>: This module enables us to manage warnings in the code that aren't necessarily errors but highlights depreciated feaures or non-critical issues.</li>
-  <li><code>import plotly.express as px</code>: This is a data visualisation module built for Plotly. It allows for creating charts with minimal code.</li>
-  <li><code>import plotly.graph_objects as go</code>: This is a data visualisation module built for Plotly. It allows to be more customisable graphs.</li>
-  <li><code>import plotly.io as pio</code>: It handles the input/output operates for Plotly graphs or figure. Default options are placing the figures in-line with the Notebook, opening the figure in a browser or producing a static image.</li>
-  <li><code>import dash</code>: A library that enables people to build interactive web-based
-    dashboards. It works with Plotly and React.js for creating UI.</li>
-  <li><code>from dash import dcc</code>: dcc or Dash Core Components manages the compotents of the overall dashboard (sliders, dropdown menus, tables, graphs).</li>
-  <li><code>from dash import html</code> html provides HTML components that enables coders to structure their dashboard.</li>
-    <li><code>from dash.dependences import Input Output</code> <b>Input</b> specifies a component/property that triggers an update. <b>Output</b> triggers a component/property to update.</li>
+  <li><code>import logging</code>: This module to records the execution of functions within the .py file.</li>
+  <li><code>import calendar </code>: This module to provides calendar style formatting of datetime objects.</li>
+  <li><code>import datetime </code>: This module enables the manipulation of datetime objects.</li>
 </ul>
 
 <br>
@@ -335,6 +320,13 @@ unique_artists = process_artist_dataset(unique_artists)
 </ul>
 <br>
 
+The Tableau dashboard does not currently contain any analysis on specific songs but you can use the track info API to answer the following questions:
+<li> What is the distribution of decades across my music taste? </li>
+<li> How is my music taste impacted by popular culture? </li>
+<li> How often do I skip past music? </li>
+
+<br>
+
 ```python
 def get_track_info(track_name, artist_name):
     params = {"q": f"track:{track_name} artist:{artist_name}", "type": "track", "limit": 1}
@@ -444,6 +436,29 @@ followers_df = api_check[api_check['followers_m'] <= max_followers]
 <h6> Output: </h6>
 <h7> Streaming history DataFrane: </h7>
 
+<h4> 1. Explore the top sub-genres over the last 2 years</h4>
+
+```python
+# Get all unique sub-genres 
+all_genres = [genre for sublist in unique_artists['genres'] for genre in sublist]
+
+# Get the count of each genre
+genre_counts = Counter(all_genres)
+
+# Create the word cloud
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(genre_counts)
+
+# Display the word cloud using matplotlib
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+```
+<h6>Output</h6>
+<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/all-sub-genre-preferences.png">
+<br>
+
+
 <h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
   
 ```python
@@ -533,48 +548,7 @@ def get_top_music(df):
 ```
 <h6>Output</h6>
 
-<h5> 5b. Which genres appreared in both 2023 and 2024 </h5>
 
-```python
-# Find the unique genres for both 2023 and 2024.
-genres_2023 = df[df['year'] == 2023]['genre'].unique()
-genres_2024 = df[df['year'] == 2024]['genre'].unique()
-
-# Find which genres appeared in both years
-existing_genres = set(genres_2024) & set(genres_2023)
-
-# Create the DataFrame that stores which genres appear both years for later analysis
-top_genres_filtered = top_genres[top_genres['genre'].isin(existing_genres)]
-
-# For the final graph, create a DataFrame that shows how often you are streaming your preferred genres
-
-genre_streaming_month = df[df['genre'].isin(existing_genres)].groupby(['month', 'month_name', 'year', 'genre'])['total_ms'].sum().reset_index(name='total_ms_played')
-genre_streaming_month['hours'] = round(((genre_streaming_month['total_ms_played'] / 60000) / 60), 1)
-genre_streaming_month = genre_streaming_month.drop('total_ms_played', axis=1)
-```
-<h6>Output</h6>
-
-<h4> 7. Explore the top sub-genres over the last 2 years</h4>
-
-```python
-# Get all unique sub-genres 
-all_genres = [genre for sublist in unique_artists['genres'] for genre in sublist]
-
-# Get the count of each genre
-genre_counts = Counter(all_genres)
-
-# Create the word cloud
-wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(genre_counts)
-
-# Display the word cloud using matplotlib
-plt.figure(figsize=(10, 5))
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis('off')
-plt.show()
-```
-<h6>Output</h6>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/all-sub-genre-preferences.png">
-<br>
 
 <h4> 5. How is my music taste distributed across decades? </h4>
 
