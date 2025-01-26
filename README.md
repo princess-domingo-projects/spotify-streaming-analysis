@@ -1,38 +1,22 @@
-<center><h1>Spotify Streaming Analysis Python Project</h1></center>
+<center><h1>Spotify Streaming Analysis - Tableau & Python Project</h1></center>
 <h2>Contents</h2>
 <ul>
   <li><a href="#introduction">Introduction</a>
   <li><a href="#libraries">Import Required Libraries</a>
-  <li><a href="#explore">Explore the Dataset</a>
-  <li><a href="#spotifywebapi">Spotfiy Web API</a>
-  <li><a href="#diagnosis">Diagnostic Analysis of the Spotify API Integration
-  <li><a href="#insights">Exploratory Analysis and Insights   
+  <li><a href="#transform">Data Cleaning & Transforming</a>
+  <li><a href="#spotifywebapi">Spotfiy Web API: Artist Discovery</a>
+  <li><a href="#genreassociation">Genre Association 
 </ul>
 
 <br>
 <h1><a name="introduction">Introduction</a></h1>
 <p>
-  As an avid music lover, Spotify has become an integral part of my daily routine. 
-
-  The purpose of my project is to identify trends in my streaming behaviour for the past 2 years (2023 and 2024).
-
-  In this project, we will be measuring the following:
-  <ul>
-    <li>Total Days on Spotify
-    <li>Average Hours on Spotify per Day
-    <li>Streaming Behaviour throughout the Day
-    <li>Change in Spotify Usage Year-on-Year
-    <li>Top Genres, Artists & Songs
-    <li>Total New Artists (2024)
-    <li>The relationship between popularity and music preferences
-    <li>Listening Streaks - Artists & Songs
-    <li>The relationship between seasonality and genre preference evoluation
-    <li>The success of genre attribution from Spotify API 
+  This project is commemorate my first full year in Data. Spotify is known for its incredibly rich data and their Spotify API documentation is super indepth so I decided to create own (but not quite) Spotify Wrapped. I developed a custom API that can associate an artist to a string of genres and then further classify them into umbrellas. The purpose of this analysis is to identify trends in my streaming behaviour over the last two years (2023 and 2024). I have chosen <a href="https://public.tableau.com/app/profile/princess.domingo/viz/SpotifyProjectv1_17378454361870/Dashboard22#1">Tableau</a> as my BI tool due to its interactivity and flexible parameter building.
 </ul>
 
-  Spotify offer a free download of historic streaming data via <a href="https://www.spotify.com/uk/account/privacy/"> Spotify | Account Privacy</a><p>
+Spotify offer a free download of historic streaming data via <a href="https://www.spotify.com/uk/account/privacy/"> Spotify | Account Privacy</a><p>
 
-Please feel free to reach out with any questions or suggestions at <a href="https://www.linkedin.com/in/princess-d-491a3b182/"> LinkedIn | Princess Domingo
+Please feel free to reach out with any questions on the <a href="https://public.tableau.com/app/profile/princess.domingo/viz/SpotifyProjectv1_17378454361870/Dashboard22#1">dashboard</a> or suggestions at <a href="https://www.linkedin.com/in/princess-d-491a3b182/"> LinkedIn | Princess Domingo
  </p>
 
  <ul><h3>Tools Used:</h3>
@@ -76,10 +60,23 @@ import calendar
 </ul>
 
 <br>
-<h1><a name="explore">Exploring the Dataset</a></h1>
-<p>Spotify's streaming history data is delivered to users in JSON format</p>
+<h1><a name="transform"><h3>Data Cleaning & Transformation</a></h1>
 
 ```python
+# Capture the current date
+current_date = datetime.now().strftime('%Y-%m-%d')
+
+# Set up a log file
+log_file = f'spotify_api_log_notes_{current_date}.txt'
+
+# Set up your logging configuration
+logging.basicConfig(
+    filename=log_file,
+    filemode='w',
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 # Add a snippet of the Spotify streaming history JSON data
 json_data = [
     {
@@ -101,45 +98,44 @@ json_data = [
         "msPlayed" : 215985
     }]
 
-# Import all JSON files
-spot_1 = pd.read_json('stream_2023.json')
-spot_2 = pd.read_json('stream_2023_1.json')
-spot_3 = pd.read_json('stream_2024.json')
-spot_4 = pd.read_json('stream_2024_1.json')
+# Import the JSON files
+df1 = pd.read_json('stream_2023.json')
+df2 = pd.read_json('stream_2023_1.json')
+df3 = pd.read_json('stream_2024.json')
+df4 = pd.read_json('stream_2024_1.json')
 
-# Create a function to view each DataFrame's metadata and structure
-def view_metadata(df):
-    print('statistical summary:')
-    print(df.describe().transpose())
-    print('DataFrame size:', df.shape)
-    print('metadata:')
-    print(df.info())
-    print('First five DataFrame rows:')
-    print(df.head())
+# Create two new dataframes for 2023 and 2024 respectively
+df5 = pd.concat([df1, df2], axis=0)
+df6 = pd.concat([df3, df4], axis=0)
 
-view_metadata(spot_1)
+# Convert the columns from camelCase to snake_case 
+df5.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', col).lower() for col in df5.columns]
+df6.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', col).lower() for col in df6.columns]
+
+def check_dates(df, year):
+    df['date'] = pd.to_datetime(df['end_time'].str[:10])
+    if year == 2023:
+        year == 2023
+    else: 
+        year == 2024
+    logging.info(f'The earliest recorded date in the {year} DataFrame is {df["date"].min().strftime("%Y-%m-%d")}.')
+    logging.info(f'The latest recorded date in the {year} DataFrame is {df["date"].max().strftime("%Y-%m-%d")}.')
+
+# Remove any overlapping data
+df7 = df5[df5['date'] < '2024-01-01']
+df8 = df6[df6['date'] >= '2024-01-01']
+
+check_dates(df7, year=2023)
+check_dates(df8, year=2024)
+
+df10 = pd.concat([df8, df7], axis=0)
+logging.info(f'Spotify data has been successfully concatenated.')
+
 ```
-<h6>Output:</h6>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20100817.png">
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20100850.png">
+<h6>Explanation:</h6>
+<p> I first verify that the data is not overlapping across both years. Once I'm confident it's been removed, per the log notes, I join the data together on the axis=0 or horizontally.</p>
 
-<h3>Data Cleaning & Transformation</h3>
-
-```python
-# Create 2 new DataFrames for the 2023 and 2024 data respectively.
-hist_2023 = pd.concat([spot_1, spot_2], axis=0)
-hist_2024 = pd.concat([spot_3, spot_4], axis=0)
-
-# I want to change the columns from camelCase to snake_case but this step can be skipped
-hist_2023.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', col).lower() for col in hist_2023.columns]
-hist_2024.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', col).lower() for col in hist_2024.columns]
-print('Spotify 2023 columns:', hist_2023.columns )
-print('Spotify 2024 columns:', hist_2024.columns )
-```
-
-<h6>Output:</h6>
-<img width="600" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193526.png">
-<br>
+<h6>Columns:</h6>
  <ul>
   <li><code>end_time</code>: The date and time the user stopped listening to the song</li>
   <li><code>artist_name</code>: The name of the artist</li>
@@ -148,82 +144,24 @@ print('Spotify 2024 columns:', hist_2024.columns )
 </ul>
 <br>
 
-```python
-# When reviewing the metadata for the streaming history, I can see there is some overlap in data.
-# I want to know the earliest and latest dates recorded for each DataFrame
-# so I can delete any duplicates, if neccessary.
-
-def check_dates(df):
-    # Create a new date column
-    df['date'] = pd.to_datetime(df['end_time'].str[:10])
-    print(f'The earliest recorded date is {df['date'].min().strftime('%Y-%m-%d')}.')
-    print(f'The larest recorded date is {df['date'].max().strftime('%Y-%m-%d')}.')
-
-check_dates(hist_2023)
-check_dates(hist_2024)
-```
-<h6>Output:</h6>
-<p>Dates for 2023 DataFrame</p>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20194251.png">
-<h6>Output:</h6>
-<p>Dates for 2024 DataFrame</p>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193555.png">
-
-```python
-# Omit any data that overlaps 
-clean_2023 = hist_2023[hist_2023['date'] < '2024-01-01']
-clean_2024 = hist_2024[hist_2024['date'] > '2024-01-01']
-
-check_dates(clean_2023)
-check_dates(clean_2024)
-```
-<h6>Output:</h6>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20193619.png">
-
-```python
-# Now that we are confident there is no overlapping data, you can concat all spotify history into 1 DataFrame for easier handling 
-full_hist = pd.concat([clean_2023, clean_2024], axis=0)
-
-# For this analysis, I will be using various datetime aggregations so will need to create some extra columns 
-def add_datetime_objects(df):
-    # Month column 
-    df['month'] = pd.to_datetime(df['date'].dt.to_period('M').dt.start_time.dt.strftime('%Y-%m-%d'))
-
-    # Quarter column 
-    df['quarter'] = pd.to_datetime(df['date'].dt.to_period('Q').dt.start_time.dt.strftime('%Y-%m-%d'))
-
-    # Year column 
-    df['year'] = df['date'].dt.year
-
-    # Streaming hour
-    df['end_time'] = pd.to_datetime(df['end_time'])
-    df['stream_hour'] = df['end_time'].dt.hour
-
-    return df
-
-full_hist = add_datetime_objects(full_hist)
-
-full_hist.head(10)
-```
-<h6>Output:</h6>
-<img width="500" alt="Coding" src="">
-
-<br>
-
-<h1><a name="spotifywebapi">Spotfiy Web API</a></h1>
+<h1><a name="spotifywebapi">Spotfiy Web API: Artist Discovery</a></h1>
 <p> I would like more qualiative data for the artists and songs in my streaming history so I will be connecting to the Spotify Web API.
 We will first get genres and the number of followers of each unique artist.</p>
 
 ```python
-# Create a DataFrame for all unique artists
-unique_artists = full_hist[['artist_name']].drop_duplicates()
+# The API needed to query unique artists. I recommend creating a DataFrame that captures all unique artists rather than running the entire DataFrame which will contain duplicates.
 
-# Create a smaller DataFrame that will be used to test the API functionality
-unique_artists_small = unique_artists.head(10)
-
-# Set up the API connectoon to generate the associated genre to each artist
 spotify_id = os.getenv("spotify_client_id") # Replace with own client ID
+if spotify_id: 
+    logging.info("Spotify ID found. Searching for secret key...")
+else:
+    logging.error("Spotify ID not found, required for API connection!")
 spotify_secret = os.getenv("spotify_client_secret") # Replace with own secret key
+
+if spotify_secret: 
+    logging.info("Spotify secret key found.")
+else:
+    logging.error("Spotify ID not found, required for API connection!")
 
 # Spotify API Endpoints
 auth_url = "https://accounts.spotify.com/api/token"
@@ -239,21 +177,27 @@ def get_access_token(client_id, client_secret):
     response_data = response.json()
     return response_data.get("access_token")
 
-# Fetch access token
 access_token = get_access_token(spotify_id, spotify_secret)
-if not access_token:
-    raise Exception("Failed to retrieve access token. Check your credentials.")
+
+if access_token:
+    logging.info("Credentials successfully verified.")
+else:
+    logging.error("Failed to retrieve access token. Check your credentials.")
 
 # Set headers for API requests
 headers = {"Authorization": f"Bearer {access_token}"}
 
-# Get the associated genres for each artist
+# This is the function to find the relevant artist information that we want for the artist.
 def get_artist_info(artist_name):
+    # Set up the parameters; the query is the artist name.
+    # The type is 'artist' to find artist information.
+    # Look for 1 unique artist at a time.
     params = {"q": artist_name, "type": "artist", "limit": 1}
     try:
         response = requests.get(search_url, headers=headers, params=params)
         response.raise_for_status()
         artist_data = response.json()
+        # If the JSON contains the key 'items', then return the relevant column values.
         if artist_data["artists"]["items"]:
             artists = artist_data["artists"]["items"][0]
             return {
@@ -263,16 +207,21 @@ def get_artist_info(artist_name):
             }
         return None
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching artist info for '{artist_name}': {e}")
+        # Where the artist isn't found, the log text will detail which artist failed.
+        # Usually, it is unstable internet connection or special characters [%@^$] that can affect the success of the API.
+        logging.warning(f"Error fetching artist info for '{artist_name}': {e}")
         return None
+    
 
-# Add the function to the artist dataset
-def process_artist_dataset(df, batch_size=150):
+# The recommended batch is fifty (50). It takes an average of two (2) to three (3) minutes for one (1) batch.
+# This can be in/decreased based on personal preferences.
+def process_artist_dataset(df, batch_size=50):
     processed_file = "spotify_api_artist_info.csv"
 
    # Ensure the necessary columns exist
     required_columns = ["genres", "followers", "artist_popularity"]
 
+    # If the value is found, add to the relevant column; else return None.
     for col in required_columns:
       if col not in df.columns:
           df[col] = None
@@ -289,30 +238,68 @@ def process_artist_dataset(df, batch_size=150):
             df.at[i, "followers"] = artist_info.get("followers")
             df.at[i, "artist_popularity"] = artist_info.get("artist_popularity")
 
-        # Save progress in every batch
+        # Save progress in every batch to add to the log file
         if i % batch_size == 0 or i == len(df) - 1:
             df.to_csv(processed_file, index=False)
-            print(f"Saved progress: {i + 1}/{len(df)} rows processed.")
+            logging.info(f"Saved progress: {i + 1}/{len(df)} rows processed.")
 
         # Throttle requests to avoid hitting API limits
         time.sleep(1)
 
     return df
 
-# Test the data API functionality first
-unique_artists_small = process_artist_dataset(unique_artists_small)
+def add_spotify_info(df):
+
+    if len(df) <= 10: 
+        chunks = [df] 
+    else:
+        # Define the size of each split
+        split_size = len(df) // 8
+
+        # Split the DataFrame into 8 parts
+        chunks = [
+            df.iloc[i * split_size : (i + 1) * split_size] if i < 7 else df.iloc[i * split_size :]
+            for i in range(8)
+        ]
+
+    # List to store processed chunks
+    processed_chunks = []
+    # Define the size of each split
+    split_size = len(df) // 8
+    
+    # Split the DataFrame into 8 parts
+    sf1 = df.iloc[:split_size]
+    sf2 = df.iloc[split_size:2*split_size]
+    sf3 = df.iloc[2*split_size:3*split_size]
+    sf4 = df.iloc[3*split_size:4*split_size]
+    sf5 = df.iloc[4*split_size:5*split_size]
+    sf6 = df.iloc[5*split_size:6*split_size]
+    sf7 = df.iloc[6*split_size:7*split_size]
+    sf8 = df.iloc[7*split_size:]
+    
+    # List to store processed data
+    processed_chunks = []
+    
+    # List of chunks
+    chunks = [sf1, sf2, sf3, sf4, sf5, sf6, sf7, sf8]
+    
+    for i, chunk in enumerate(chunks):
+        # Process the chunk
+        processed_chunk = process_artist_dataset(chunk)
+        processed_chunks.append(processed_chunk)
+        
+        # Wait for 2 minutes after every even-numbered chunk (sf2, sf4, etc.)
+        if (i + 1) % 2 == 0 and i != len(chunks) - 1:
+            logging.info(f"Processed chunk {i + 1}. Waiting for 2 minutes...")
+            time.sleep(120)  # Wait for 2 minutes (120 seconds)
+    
+    # Combine all processed chunks into a single DataFrame
+    df2 = pd.concat(processed_chunks, axis=0)
+    
+    return df2
 ```
-
-```python
-# Run the API on the full dataset
-unique_artists = process_artist_dataset(unique_artists)
-
-# The average batch processing time is ~3 minutes per 150 rows for dataset with ~2000 rows.
-```
-
 <h6>Output:</h6>
 <img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/Screenshot%202024-12-25%20110613.png">
-
  <ul>
   <li><code>genres</code>: This returns a string of genres associated to the artist.</li>
   <li><code>followers</code>: This returns the number of followers of the artist's page. NOTE: the followers count is a few days in arreas.</li>
@@ -320,266 +307,195 @@ unique_artists = process_artist_dataset(unique_artists)
 </ul>
 <br>
 
-The Tableau dashboard does not currently contain any analysis on specific songs but you can use the track info API to answer the following questions:
-<li> What is the distribution of decades across my music taste? </li>
-<li> How is my music taste impacted by popular culture? </li>
-<li> How often do I skip past music? </li>
-
-<br>
-
-```python
-def get_track_info(track_name, artist_name):
-    params = {"q": f"track:{track_name} artist:{artist_name}", "type": "track", "limit": 1}
-    try:
-        response = requests.get(search_url, headers=headers, params=params)
-        response.raise_for_status()
-        track_data = response.json()
-        if track_data["tracks"]["items"]:
-            track = track_data["tracks"]["items"][0]
-            return {
-                "duration_ms" : track.get("duration_ms"),
-                "popularity": track.get("popularity"),
-                "release_date": track["album"].get("release_date"),
-                "release_date_precision": track["album"].get("release_date_precision")
-            }
-        return None
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching track info for '{track_name}' by '{artist_name}': {e}")
-        return None
-    
-def process_track_info(df, batch_size=50):
-    processed_file = "spotify_dataset_with_release_dates.csv"
-
-    # Ensure necessary columns exist
-    required_columns =  ["duration_ms", "popularity", 
-                         "release_date", "release_date_precision"]
-    
-    for col in required_columns:
-        if col not in df.columns:
-            df[col] = None
-
-    # Reset index to avoid KeyErrors
-    df.reset_index(drop=True, inplace=True)
-
-    for i in range(len(df)):
-
-        track_name = df.at[i, "track_name"]
-        artist_name = df.at[i, "artist_name"]
-
-        # Fetch track information
-        track_info = get_track_info(track_name, artist_name)
-        if track_info:
-            df.at[i, "popularity"] = track_info.get("popularity")
-            df.at[i, "release_date"] = track_info.get("release_date")
-            df.at[i, "release_date_precision"] = track_info.get("release_date_precision")
-            df.at[i, "duration_ms"] = track_info.get("duration_ms")
-
-        # Save progress every batch or at the end
-        if i % batch_size == 0 or i == len(df) - 1:
-            df.to_csv(processed_file, index=False)
-            print(f"Saved progress: {i + 1}/{len(df)} rows processed.")
-
-        # Throttle requests to avoid hitting rate limits
-        time.sleep(1)
-
-    return df
-
-# Process the DataFrame with track and artist names
-```
-<h6>Output:</h6>
-
- <ul>
-  <li><code>track_popularity</code>: This determines the popularity of the track on a scale of 0-100 where 0 is least popular and 100 is most popular.</li>
-  <li><code>release_date</code>: The release date of the song, if released as a single, or album containing the song</li>
-  <li><code>release_date_precision</code>: How precise the release date is: day, month or year </li>
-  <li><code>duration_ms</code>: The duration of the song in milliseconds</li>
-</ul>
-
-
-
 <p> More information on what data can be extracted from the Spotify Search API can be found <a href="https://developer.spotify.com/documentation/web-api/reference/search">here.</a></p>
 <br>
-
-<h1><a name="diagnosis">Diagnostic Analysis of the Spotify API Integration</a></h1>
+<h1><a name="genreassociation">Genre Associations</a></h1>
 
 ```python
-# Create a copy of the unique artist record
-api_check = unique_artists.copy()
+# Create a DataFrame for all unique artists
+df12 = df10[['artist_name']].drop_duplicates()
 
-# Where an artist was found by the API, true else false
-api_check['genre_found_via_api'] = np.where(api_check['artist_name'].\
+df13 = add_spotify_info(df12)
+
+umbrella_genre_map = {
+    'indie' : 'Indie', 
+    'pop' : 'Pop', 
+    'drill' : 'Rap', 
+    'rave' : 'EDM',
+    'hip hop' : 'Hip Hop', 
+    'r&b' : 'R&B', 
+    'rap' : 'Rap', 
+    'soul' : 'Soul', 
+    'rock' : 'Rock', 
+    'funk' : 'Funk', 
+    'country' : 'Country',
+    'punk' : 'Rock', 
+    'grime' : 'Hip Hop', 
+    'phonk' : 'Indie', 
+    'techno': 'EDM', 
+    'latin' : 'Latin', 
+    'edm' : 'EDM', 
+    'breakcore': 'EDM', 
+    'dnb': 'EDM',
+    'nigerian' : 'Afrobeats', 
+    'afro': 'Afrobeats', 
+    'jazz': 'Jazz', 
+    'sierra leonean' : 'Afrobeats', 
+    'plugg' : 'Rap', 
+    'jungle' : 'EDM', 
+    'psychedelic' : 'Psychedelic', 
+    'metal' : 'Rock',
+    'bass trip' : 'EDM', 
+    'dancehall': 'Dancehall', 
+    'house' : 'House', 
+    'reggage' : 'Reggage', 
+    'disco': 'Funk', 
+    'native american' : 'World', 
+    'amapiano' : 'Afrobeats', 
+    'boom bap' : 'Rap', 
+    'drum and bass' : 'EDM', 
+    'electronic' : 'EDM', 
+    'dubstep': 'EDM', 
+    'garage': 'EDM', 
+    'anime': 'World', 
+    'japanese' : 'World', 
+    'surf': 'Psychedelic', 
+    'dance': 'EDM', 
+    'bassline' : 'House', 
+    'argentina' : 'Latin', 
+    'jersey' : 'EDM', 
+    'reggae' : 'Reggae', 
+    'ghanaian': 'Afrobeats', 
+    'azonto' : 'Afrobeats', 
+    'gaze': 'Indie', 
+    'kompa' : 'World', 
+    'south african' : 'Afrobeats', 
+    'corecore' : 'Indie', 
+    'chillhop' : 'Hip Hop', 
+    'zouk' : 'Afrobeats', 
+    'ukg' : 'EDM', 
+    'sertanejo' : 'Latin', 
+    'clubbing' : 'EDM', 
+    'sped up' : 'EDM', 
+    'aussietronica' : 'EDM', 
+    'chillwave': 'Indie', 
+    'chinese' : 'World'
+
+}
+
+# Function to find umbrella genres
+def find_umbrella_genres(genres, mapping):
+    matched_genres = set()
+    for genre in genres:
+        for keyword, umbrella_genre in mapping.items():
+            if keyword in genre.lower():  # Use lower() to make the search case-insensitive
+                matched_genres.add(umbrella_genre)
+    return list(matched_genres)
+
+# Apply the function to create a new column
+df13['umbrella_genres'] = df13['genres'].apply(
+    lambda x: find_umbrella_genres(x, umbrella_genre_map) if x is not None else None
+)
+
+df13['primary_genre'] = df13['umbrella_genres'].apply(lambda x: x[0] if x else 'Other')
+logging.info('Genres have been applied to the artist DataFrame. Calculating uncategorized artists....')
+
+uncategorized_artists = df13[df13['primary_genre'].str.contains('Other')]
+uncategorized_artists_list = uncategorized_artists['artist_name'].unique()
+percent_total = round((len(uncategorized_artists) / len(df13))*100, 1)
+
+if percent_total <= 30:
+    logging.info(f'There are {len(uncategorized_artists)} artists with no associated genre, {percent_total}% of all artists.') 
+    logging.info('A genre map is recommended for more accurate results.')
+else:
+    logging.info(f'There are {len(uncategorized_artists)} artists with no associated genre, {percent_total}% of all artists.') 
+
+# 48% of my total artists were uncategorized so the genre association is a mix of ChatGPT results, memory and Google searching. This is not
+# recommended if you have over 60% uncategorized artists.
+
+genre_map = {
+    'Chase Shakur': 'R&B', 'DC': 'Hip Hop', 'BreezyLYN': 'Hip Hop', 
+    'Koto.': 'EDM', 'Mushkilla': 'Hip Hop', 'dexter in the newsagent': 'Indie', 
+    'Honey Mooncie': 'Jazz', 'Mcbaise': 'Pop', 'Kamggarn': 'Indie', 'lucidbeatz': 'EDM', 
+    'Ghoulavelii': 'Hip Hop', 'Domsta': 'Hip Hop', 'Ark Woods': 'Hip Hop',
+    'Vector': 'Rock', 'daste.': 'Indie', 'Talktofranc': 'Hip Hop', 'niquo': 'EDM',
+    'goddard.': 'EDM', 'DARGZ': 'Hip Hop', 'dedwrite': 'Hip Hop',
+    '99GINGER': 'EDM', 'NOT THE TWOS': 'Indie', 'Ari Afsar': 'Pop',
+    'WMG Lab Records': 'Pop', 'Mysie': 'Pop', 'The Drums': 'Indie',
+    'Castro D’destroyer': 'Afro', 'Austin Millz': 'EDM',
+    'Mathey': 'Afro', 'SEB': 'Pop', 'Michael Abraham': 'Hip Hop',
+    'Pity Party (Girls Club)': 'Indie', 'Mind’s Eye': 'Rock', 'Cottonwood Firing Squad': 'Folk/Country',
+    'Peyton': 'EDM', 'Alexa Demie': 'Pop', 'Michel Martelly': 'Afro', 'Sparky Deathcap': 'Indie',
+    'Redbone': 'R&B', "Ni'jah": 'R&B', 'Fresh X Reckless': 'Hip Hop', 'CassKidd': 'Hip Hop',
+    'Trevor Spitta': 'Hip Hop', 'Swsh': 'R&B', 'UG Vavy': 'Hip Hop',
+    'T3': 'Hip Hop', 'Venna': 'Jazz', 'Billen Ted': 'EDM', 'Lil Vada': 'Hip Hop',
+    'Sika Deva': 'Hip Hop', "Tre' Amani": 'Hip Hop', 'Saint Joshua': 'R&B',
+    'Jontha Links': 'EDM', 'Jordan Hawkins': 'R&B', 'DIPS': 'R&B',
+    'General Lee': 'Folk/Country', 'Mejiwahn': 'Jazz', 'Juvie': 'Hip Hop',
+    'Ventry': 'Indie', 'GROOVY': 'Hip Hop', 'blondead': 'Hip Hop',
+    'Grace Sorensen': 'R&B', 'ahmed Zou': 'Indie', 'Scribbles Who': 'R&B',
+    'Eduardo Luzquiños': 'World', 'Crave Moore': 'Hip Hop', 'JJYuMusic': 'Experimental',
+    'K Meta': 'Experimental', 'John Wells': 'Indie', 'Zombie Juice': 'Hip Hop',
+    'Isaiah Falls': 'R&B', 'Dave $tokes': 'Hip Hop', 'Nudashe': 'Hip Hop', 
+    'artistbasm': 'Hip Hop', 'EDMy coleman!': 'Hip Hop', 'Heno.': 'Jazz', 
+    'Dinner Party': 'Indie', 'Quadroon': 'Indie', '3rd Wxrld': 'Hip Hop',
+    'Take Van': 'Pop', 'Frank Ivy': 'Indie', 'Yellow Trash Can': 'Hip Hop', 
+    'Arc De Soleil': 'Indie', 'Blu DeTiger': 'Indie', 'Gloria Tells': 'R&B',
+    'Humble the Great': 'Hip Hop', 'Shenie Fogo': 'Indie', 'Marigold': 'Rock', 
+    'Harvey Whyte': 'Hip Hop', 'Chillz': 'Afro', 'Hannymoon': 'Pop', 
+    'Steph Ocho': 'Afro', 'Reapz': 'Hip Hop', 'BYELUH': 'Pop', 'WINTER ENDS': 'Experimental',
+    'KOTU': 'EDM', 'King Jelz': 'Hip Hop', 'Nazio': 'Unknown',
+    'Ty Savage': 'Afro', 'LONESTAR': 'Folk/Country', 'FERNE': 'Indie',
+    'AYOCHILLMANNN': 'Hip Hop', 'Jazz Playaz': 'Jazz', 'YAZ': 'Indie',
+    'ParanoidRapper': 'Hip Hop', 'Saiming': 'Hip Hop', 'Rizz Capolatti': 'Hip Hop',
+    'Avelino': 'Hip Hop', 'ARTAN': 'Hip Hop', 'OTG': 'Hip Hop', 'BABYLON MAYNE': 'Hip Hop',
+    'KiltKarter': 'Hip Hop', '8SZN': 'Hip Hop', 'RichGains': 'Hip Hop', 'JAYPROB': 'Hip Hop', '27Delly': 'Hip Hop',
+    'Joony': 'Hip Hop', 'Paxslim': 'Hip Hop', 'Flower in Bloom': 'Indie', 
+    'Kaelin Ellis': 'Hip Hop', 'Dejima': 'Rock', 'Lokowat': 'EDM', 'Miguel KR': 'Hip Hop', 
+    'Mulatoh Prod': 'EDM', 'Pale Jay': 'R&B', 'Dare Devil': 'Rock', "MC's Zaac": 'Hip Hop',
+    'Kelly Doyle': 'EDM', 'Ruben Moreno': 'EDM', 'strongboi': 'Hip Hop',
+    'Blended Babies': 'Hip Hop', 'Chek': 'Indie', 'Brad stank': 'Indie', 'Langston Bristol': 'Hip Hop',
+    'Oladipo': 'Hip Hop', 'CoryaYo': 'Hip Hop', 'LBL': 'Hip Hop', 'Wale the Sage': 'Hip Hop',
+    'Tommy Guerrero': 'Indie', 'Andy Clockwise': 'Indie', 'Khi Infinite': 'Hip Hop', 
+    'Derek Simpson': 'Indie', 'T. Evann': 'Indie', 'Honeywhip': 'Indie', 'Ambassadeurs': 'EDM', 
+    'KINGDM': 'EDM', 'Jianbo': 'Jazz', 'SamRecks': 'Hip Hop', 'Mugzz': 'Hip Hop', 'Lil Seyi': 'Hip Hop', 
+    'M-Beat': 'Hip Hop', 'No Guidnce': 'Hip Hop', 'Haraket': 'EDM', 'DJ Zone': 'EDM',
+    'DOMi & JD BECK': 'Jazz', 'Martha Eve': 'Indie', 'FendiDa Rappa': 'Hip Hop', 'tomcbumpz': 'Hip Hop',
+    '8Nights': 'Pop', 'KiLLOWEN': 'Hip Hop', 'Keys the Prince': 'Hip Hop', 'AntsLive': 'Hip Hop',
+    'CLAVIS 7EVEN': 'Hip Hop', 'Jim Legxacy': 'Hip Hop', 'Sad Night Dynamite': 'Experimental',
+    'Brandon Nembhard': 'Hip Hop', 'Banditt': 'Hip Hop', 'matt mcwaters': 'R&B',
+    'Kindness': 'Hip Hop', 'Merges': 'Hip Hop', 'dialE': 'Hip Hop', 'COLDKiDCLUB': 'Hip Hop',
+    'Blaize Jenkins': 'Hip Hop', 'Common Saints': 'R&B', 'Holy Hive': 'Folk/Country',
+    'Kelz2busy': 'R&B', 'Fimiguerrero': 'Hip Hop', 'brazy': 'Hip Hop', 
+    'Soft Powers': 'Indie', 'Joe Hisaishi': 'World', 'Lauren Faith': 'EDM', 
+    'veggi': 'Hip Hop', 'In Deep We Trust': 'EDM', 'King Imprint': 'Hip Hop', 'Claud': 'Indie',
+    'kostromin': 'Hip Hop', 'Vague Detail': 'R&B', 'Beach Party Music': 'Indie', 
+    'How DBlack Do Dat': 'Hip Hop', 'R616U': 'Hip Hop', 'Mari.': 'Pop',
+    'NBE': 'Hip Hop', 'OTF Zay': 'Hip Hop', 'DJ Yones': 'EDM', 
+    'AFrmDaBank': 'Hip Hop', 'OGHollywood': 'Hip Hop', "Jumpin' Joe The Rapper": 'Hip Hop', 
+    'NuNu': 'Hip Hop', 'OutTheWay_Jay': 'Hip Hop', 'Paperboy Fabe': 'Hip Hop',
+    'arpsweatpants': 'Hip Hop', 'Ms. Ca$H': 'Hip Hop', 'Woo Da Savage': 'Hip Hop', 
+    'Anycia': 'Hip Hop', 'DEELA': 'Hip Hop', 'Dj Akoza': 'EDM', 'DJ Acura': 'EDM',
+    'Mula Axe': 'Hip Hop', 'Bbyafricka': 'Hip Hop', 'Zoeyy B.': 'Hip Hop', 'Vae Vanilla': 'Hip Hop', 
+    'Alfonso Ramos': 'Hip Hop', 'Baby Monii': 'Hip Hop', 'Lanae': 'Hip Hop', 'FlowFly': 'Hip Hop',
+    'Teya & Salena': 'Pop', 'Vincent Thiery': 'Jazz', 'Luckie_L': 'Indie', 'K.A.G': 'Hip Hop',
+    'Minu': 'Indie', 'Makohna': 'Pop'
+}
+
+def clean_artist_data(df):
+    df['new_genre'] = df.apply(
+    lambda row: genre_map[row['artist_name']] if row['artist_name'] in genre_map else row['primary_genre'],
+    axis=1)
+
+    df['genre_found_by_api'] =  np.where(df['artist_name'].\
                             isin(uncategorized_artists_list), False, True)
 
-# Convert the numeric values from objects / strings to integer.
-api_check[['followers', 'artist_popularity']] = api_check[['followers', 'artist_popularity']].astype('int64')
+    df2 = df.drop(['genres', 'umbrella_genres', 'primary_genre'], axis=1).rename(columns={'new_genre': 'genre'})
 
-# Calculate the number of followeers in millions
-api_check['followers_m'] = round(api_check['followers'] / 1000000, 1)
+    df2.to_csv(f'spotify_artist_info_{current_date}.csv', index=False)
 
-# Next, we want to know the maximimum of amount of followers an uncategorized artist has in this sample.
-max_followers = api_check.loc[api_check['genre_found_via_api'] == False, 'followers_m'].max()
-followers_df = api_check[api_check['followers_m'] <= max_followers]
+    return df2
+
+df14 = clean_artist_data(df13)
 ```
-
-<h6>Output</h6>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/artist-popularity-genre-attribution.png">
-
-<br>
-<h1><a name="insights">Exploratory Analysis and Insights</a></h1>
-
-<p> The script contains a function that calculates the values from two datasets: 'artist_info' and 'streaming_history. The Python excerpts below are representative of the function.</p>
-
-<h6> Output: </h6>
-<h7> Artist info DataFrane: </h7>
-
-
-<h6> Output: </h6>
-<h7> Streaming history DataFrane: </h7>
-
-<h4> 1. Explore the top sub-genres over the last 2 years</h4>
-
-```python
-# Get all unique sub-genres 
-all_genres = [genre for sublist in unique_artists['genres'] for genre in sublist]
-
-# Get the count of each genre
-genre_counts = Counter(all_genres)
-
-# Create the word cloud
-wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(genre_counts)
-
-# Display the word cloud using matplotlib
-plt.figure(figsize=(10, 5))
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis('off')
-plt.show()
-```
-<h6>Output</h6>
-<img width="500" alt="Coding" src="https://github.com/princess-domingo-projects/spotify-streaming-analysis/blob/main/all-sub-genre-preferences.png">
-<br>
-
-
-<h4> 1. How many days did I spend on Spotify in 2023 and 2024? </h4>
-  
-```python
-# Calculate the total milliseconds spent streaming music each year
-df2 = df.groupby('year')['total_ms'].sum().reset_index()
-
-# Convert to hours to improve readability.
-df2['hours'] = round(((df2['total_ms'] / 60000) / 60), 1)
-```
-<br>
-<h6>Output</h6>
-<h4> 2. How has my streaming behaviour changed MoM each year? </h4>
-
-```python
-# Calculate the total milliseconds spend streaming music each month 
-df3 = df.groupby(['month', 'month_name', 'year'])['total_ms'].sum().reset_index().sort_values(by=['month', 'year'], ascending=[True, False])
-
-# Convert to hours to improve readability.
-df3['hours'] = round(((df3['total_ms'] / 60000) / 60), 1)
-```
-<br>
-<h6>Output</h6>
-<h4> 3. Are there set times of the day that I prefer listenning to muisc? </h4>
-
-```python
-# Calculate the total
-df4 = df.groupby(['stream_hour', 'year'])['total_ms'].sum().reset_index()
-df4['hours'] = round(((df4['total_ms'] / 60000) / 60), 1)
-df4 = df4.drop('total_ms', axis=1)
-```
-
-<h6>Output</h6>
-
-<h4> 4. What was the highest recorded listening day in 2023 and 2024? </h4>
-
-```python
-# How many hours did I listen to Spotify a day?
-df5 = df.groupby(['date', 'year'])['total_ms'].sum().reset_index()
-df5['hours'] = round(((df5['total_ms'] / 60000) / 60), 1)
-df5 = df5.drop('total_ms', axis=1)
-
-# What is the highest recorded listening day in 2023 and 2024?
-df6 = df5.loc[df5.groupby('year')['hours'].idxmax()]
-```
-
-<h6>Output</h6>
-
-<h4> 5. What were my top artists, genres and songs for both year? </h4>
-
-```python
-# Create a function to dynamically calculate top genres, artiss and songs per year
-def get_top_music(df):
-        group_columns = {
-            'top_songs': 'track_name',
-            'top_artists': 'artist_name',
-            'top_genres': 'genre'
-        }
-
-        top_dataframes = {}
-
-        for name, column in group_columns.items():
-            if column in df.columns:
-
-              # Calculate the total milliseconds played was selected per year and each respective column (genre, artist and then song)
-              # We will be calculating both the total milliseconds
-                df7 = df.groupby(['year', column]).agg(
-                    total_ms=('total_ms', 'sum'),
-                    total_times=('track_name', 'count')
-                ).reset_index().sort_values(by=['year', 'total_ms'], ascending=[False, False])
-
-                df7['hours'] = round(((df7['total_ms'] / 60000) / 60), 1)
-                df7 = df7.drop('total_ms', axis=1)
-
-                df8 = df7.groupby('year').head(10)
-
-                # Save the top dataframe to the dictionary
-                top_dataframes[name] = df8
-
-        return top_dataframes
-
-    top_dataframes = get_top_music(df)
-
-    # Access each individual dataframes
-    top_songs = top_dataframes.get('top_songs')
-    top_artists = top_dataframes.get('top_artists')
-    top_genres = top_dataframes.get('top_genres')
-```
-<h6>Output</h6>
-
-
-
-<h4> 5. How is my music taste distributed across decades? </h4>
-
-<h4> 6. What were the top genres in 2023 and 2024?</h4>
-
-<h5> 6b. How have my genre preferences changed quarter-on-quarter and year-on-year? </h5>
-
-<h5> 6c. What were the top genres on the highest recorded listening day for 2023 and 2024? </h5>
-
-<h4> 7. What were the top genres in 2023 and 2024? </h4>
-
-<h5> 7b. How many new artists did I listen to in 2024? </h5>
-
-<h5> 7c. What were my top songs from new artists in 2024? </h5>
-
-<h5> 7d. What were the top artists on the highest recorded listening day for 2023 and 2024</h5>
-
-<h4> 8. What were my longest listening streaks? </h4>
-
-<h5> 8b. Per year and artist </h5>
-
-<h5> 8b. Per year and song </h5>
-
-<h4> 9. How often did I skip music? </h4>
-
-<h5> 9b. Is there a relationship between the time of day I'm listening to music and when I skip music? </h5>
-
-<br>
-<h1><a name="hypothesis">Hypotheses for 2025</a></h1>
-
-<br>
-
-<h1><a name="plotly">Creating Graphs using Plotly</a></h1>
 
