@@ -20,7 +20,7 @@ Please feel free to reach out with any questions on the <a href="https://public.
  </p>
 
  <ul><h3>Tools Used:</h3>
- <li>Programming Language: Python, SQL</li>
+ <li>Programming Language: Python</li>
  <li>Libraries: pandas, numpy, requests, dotenv</li>
  <li>Modules: re, time, os, warnings, logging, datetime, calendar</li>
  <li>IDE: VS Code </li>
